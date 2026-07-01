@@ -1,121 +1,68 @@
-# media-growth-copilot
-An AI-powered media operations agent for content analytics, viral prediction, and comment assistance...
-## 1. Product Vision
+📘 Media Growth Copilot
 
-Media Growth Copilot is an AI-powered media operations system that helps content and marketing teams:
+AI-powered Media Intelligence System for content performance analysis and growth optimization.
 
-- Automatically collect content performance data from social platforms (YouTube / Instagram)
-- Identify early-stage viral content signals
-- Generate structured performance insights
-- Assist in comment classification and response suggestions
-- Push key signals to Feishu for real-time operations monitoring
+⸻
 
-The goal is to reduce manual data processing and enable faster content iteration cycles.
+🎯 What it does
 
-## 2. System Overview
+Transforms raw social media data (VOC / APIs / datasets) into actionable insights:
 
-The system consists of four main layers:
+* Content performance analysis
+* Viral content prediction
+* Engagement metrics computation
+* Comment classification
+* Operational alerts
 
-### 1. Data Collection Layer
-- Pulls video/content data from platforms (initially CSV / mock data, later APIs)
+⸻
 
-### 2. Storage Layer
-- Stores structured content data in SQLite database
+🧠 Core Concept
 
-### 3. Intelligence Layer
-- Computes engagement metrics
-- Predicts viral probability
-- Generates insights and anomaly detection
+Observe → Analyze → Predict → Recommend → Notify
 
-### 4. Action Layer
-- Sends alerts to Feishu
-- Provides comment classification and reply suggestions
+Powered by modular AI Agent architecture.
 
-## 3. Data Sources
+⸻
 
-Initial phase:
-- YouTube sample dataset (provided by team)
-- Instagram mock/export data
+🧩 System Overview
 
-Future phase:
-- YouTube Data API
-- Instagram Graph API
-- Third-party analytics tools
+The system is built on an Adapter-based architecture:
 
-## 4. Core Agents
+* CSVAdapter (development)
+* VOCAdapter (competition primary source)
+* APIAdapter (company system)
 
-### 1. Collector Agent
-Responsible for ingesting content data from external sources.
+⸻
 
-### 2. Analyzer Agent
-Computes:
-- Engagement Rate
-- View Growth Rate
-- Like/Comment Ratio
+⚙️ Architecture Layers
 
-### 3. Predictor Agent
-Outputs:
-- Viral probability score (0-100)
-- Content potential classification
+* Data Collection Layer (Adapter-based ingestion)
+* Storage Layer (SQLite optional persistence)
+* Intelligence Layer (metrics + prediction)
+* Action Layer (Feishu + insights output)
 
-### 4. Comment Agent
-Handles:
-- Comment classification
-- Reply suggestions
-- Risk detection (negative / support / spam / sales inquiry)
+⸻
 
-## 5. Data Model
+🚀 Key Features
 
-### Video Table
-- video_id
-- platform
-- title
-- publish_time
-- views
-- likes
-- comments
-- shares
-- engagement_rate
-- viral_score
-- created_at
+* Multi-source data ingestion (VOC / API / CSV)
+* Rule-based engagement analysis
+* Viral content scoring system
+* Comment classification system
+* Human-in-the-loop action system
 
-### Comment Table
-- comment_id
-- video_id
-- content
-- sentiment
-- category
-- reply_suggestion
-- risk_level
+⸻
 
-## 6. Workflows
+🏁 Current Status
 
-1. Data is collected via Collector Agent
-2. Stored in SQLite database
-3. Analyzer computes engagement metrics
-4. Predictor generates viral score
-5. Feishu receives:
-   - High potential videos
-   - Anomalies
-   - Weekly summary
-6. Comment Agent processes new comments and generates suggestions
+Sprint 1: Data ingestion pipeline (in progress)
 
-## 7. Rules & Principles
+⸻
 
-### 1. Modularity First
-Each Agent must be independent and replaceable.
+📌 Design Principles
 
-### 2. No Hard Dependency on APIs
-System must work with mock data first.
-
-### 3. Observability
-All outputs must be traceable (logs / tables).
-
-### 4. Human-in-the-loop
-No fully autonomous actions in comment posting.
-
-### 5. Incremental Complexity
-Start simple → add intelligence gradually.
-
-### 6. Codex-Ready Design
-All modules must be structured so Codex can implement them independently.
+* Deterministic logic first
+* No ML in early sprints
+* Modular Agent architecture
+* External systems abstracted as Adapters
+* Fail-safe dry-run for all actions
