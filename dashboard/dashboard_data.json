@@ -1,0 +1,126 @@
+{
+  "generated_at": "2026-07-05T05:15:10.102352+00:00",
+  "source": "media-growth-copilot",
+  "tables": {
+    "performance_overview": [
+      {
+        "thumbnail_url": "https://img.youtube.com/vi/yt_001/hqdefault.jpg",
+        "title": "M Series mower feature demo",
+        "video_url": "https://www.youtube.com/watch?v=yt_001",
+        "views": 45000,
+        "likes": 3200,
+        "comments_count": 420,
+        "engagement_rate": 8.0444,
+        "comment_rate": 0.9333,
+        "is_short": true,
+        "content_type": "feature_demo",
+        "product_module": "割草",
+        "product_series": "M",
+        "publish_time": "2026-06-21",
+        "viral_score": 60.22
+      },
+      {
+        "thumbnail_url": "https://img.youtube.com/vi/yt_002/hqdefault.jpg",
+        "title": "Y Series snow blower review",
+        "video_url": "https://www.youtube.com/watch?v=yt_002",
+        "views": 18500,
+        "likes": 980,
+        "comments_count": 76,
+        "engagement_rate": 5.7081,
+        "comment_rate": 0.4108,
+        "is_short": false,
+        "content_type": "review",
+        "product_module": "吹雪",
+        "product_series": "Y",
+        "publish_time": "2026-06-30",
+        "viral_score": 48.54
+      }
+    ],
+    "trend_snapshot": [
+      {
+        "thumbnail_url": "https://img.youtube.com/vi/yt_001/hqdefault.jpg",
+        "title": "M Series mower feature demo",
+        "video_url": "https://www.youtube.com/watch?v=yt_001",
+        "snapshot_at": "2026-07-05",
+        "views": 45000,
+        "view_delta": 0,
+        "view_velocity": 0
+      },
+      {
+        "thumbnail_url": "https://img.youtube.com/vi/yt_002/hqdefault.jpg",
+        "title": "Y Series snow blower review",
+        "video_url": "https://www.youtube.com/watch?v=yt_002",
+        "snapshot_at": "2026-07-05",
+        "views": 18500,
+        "view_delta": 0,
+        "view_velocity": 0
+      }
+    ],
+    "viral_tracking": [
+      {
+        "thumbnail_url": "https://img.youtube.com/vi/yt_001/hqdefault.jpg",
+        "title": "M Series mower feature demo",
+        "video_url": "https://www.youtube.com/watch?v=yt_001",
+        "viral_score": 60.22,
+        "viral_tier": "rising",
+        "view_velocity": 0,
+        "engagement_rate": 8.0444,
+        "content_type": "feature_demo",
+        "product_module": "割草",
+        "is_short": true,
+        "positive_comment_ratio": 0.5
+      },
+      {
+        "thumbnail_url": "https://img.youtube.com/vi/yt_002/hqdefault.jpg",
+        "title": "Y Series snow blower review",
+        "video_url": "https://www.youtube.com/watch?v=yt_002",
+        "viral_score": 48.54,
+        "viral_tier": "seed",
+        "view_velocity": 0,
+        "engagement_rate": 5.7081,
+        "content_type": "review",
+        "product_module": "吹雪",
+        "is_short": false,
+        "positive_comment_ratio": 0.0
+      }
+    ],
+    "comments_pending": [
+      {
+        "comment_content": "Amazing mower demo, love the compact design",
+        "sentiment": "positive",
+        "category": "夸赞",
+        "video_url": "https://www.youtube.com/watch?v=yt_001",
+        "likes_count": 18,
+        "reply_suggestion": "thank user",
+        "approval_status": "pending"
+      },
+      {
+        "comment_content": "Can I buy this mower? price?",
+        "sentiment": "neutral",
+        "category": "询购",
+        "video_url": "https://www.youtube.com/watch?v=yt_001",
+        "likes_count": 9,
+        "reply_suggestion": "provide product details",
+        "approval_status": "pending"
+      },
+      {
+        "comment_content": "Worst snow blower test, terrible audio",
+        "sentiment": "negative",
+        "category": "投诉",
+        "video_url": "https://www.youtube.com/watch?v=yt_002",
+        "likes_count": 4,
+        "reply_suggestion": "apologize and assist",
+        "approval_status": "pending"
+      }
+    ],
+    "alert_history": [
+      {
+        "triggered_at": "2026-07-05T05:15:10.102270+00:00",
+        "alert_type": "viral_signal",
+        "alert_message": "M Series mower feature demo reached 60.22 viral score.",
+        "priority": "medium",
+        "video_url": "https://www.youtube.com/watch?v=yt_001"
+      }
+    ]
+  }
+}

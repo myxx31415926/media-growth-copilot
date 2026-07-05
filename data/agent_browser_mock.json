@@ -1,0 +1,63 @@
+{
+  "videos": [
+    {
+      "video_id": "yt_001",
+      "video_url": "https://www.youtube.com/watch?v=yt_001",
+      "title": "M Series mower feature demo",
+      "platform": "YouTube",
+      "channel_name": "Media Growth Lab",
+      "channel_id": "channel_001",
+      "published_relative_time": "2 weeks ago",
+      "views": "45K",
+      "thumbnail_url": "https://img.youtube.com/vi/yt_001/hqdefault.jpg",
+      "duration": "00:48",
+      "description": "A short feature demo for the M series mower.",
+      "likes": "3200",
+      "comments_count": "420"
+    },
+    {
+      "video_id": "yt_002",
+      "video_url": "https://www.youtube.com/watch?v=yt_002",
+      "title": "Y Series snow blower review",
+      "platform": "YouTube",
+      "channel_name": "Media Growth Lab",
+      "channel_id": "channel_001",
+      "published_relative_time": "5 days ago",
+      "views": "18.5K",
+      "thumbnail_url": "https://img.youtube.com/vi/yt_002/hqdefault.jpg",
+      "duration": "08:12",
+      "description": "A long-form review for the Y series snow blower.",
+      "likes": "980",
+      "comments_count": "76"
+    }
+  ],
+  "comments": [
+    {
+      "comment_id": "c_001",
+      "video_id": "yt_001",
+      "video_url": "https://www.youtube.com/watch?v=yt_001",
+      "comment_content": "Amazing mower demo, love the compact design",
+      "comment_author": "Alice",
+      "comment_likes_count": "18",
+      "comment_published_relative_time": "3 days ago"
+    },
+    {
+      "comment_id": "c_002",
+      "video_id": "yt_001",
+      "video_url": "https://www.youtube.com/watch?v=yt_001",
+      "comment_content": "Can I buy this mower? price?",
+      "comment_author": "Ben",
+      "comment_likes_count": "9",
+      "comment_published_relative_time": "2 days ago"
+    },
+    {
+      "comment_id": "c_003",
+      "video_id": "yt_002",
+      "video_url": "https://www.youtube.com/watch?v=yt_002",
+      "comment_content": "Worst snow blower test, terrible audio",
+      "comment_author": "Chris",
+      "comment_likes_count": "4",
+      "comment_published_relative_time": "1 day ago"
+    }
+  ]
+}

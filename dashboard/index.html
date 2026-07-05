@@ -1,0 +1,875 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN" style="color-scheme: light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0E9F57">
+<title>Yarbo 社媒内容监控台 · MGC</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+:root {
+  /* ---- Yarbo light theme tokens ---- */
+  --bg: #eef2ef;
+  --bg-soft: #f6f9f6;
+  --panel: #ffffff;
+  --raised: #f3f6f3;
+  --raised-hover: #eaefe9;
+  --line: #e2e8e2;
+  --line-soft: #edf1ed;
+  --text-primary: #16241c;
+  --text-secondary: #566159;
+  --text-muted: #93a099;
+
+  /* Yarbo brand green */
+  --brand: #0e9f57;
+  --brand-dark: #0a7d43;
+  --brand-soft: rgba(14,159,87,0.10);
+
+  /* Tier ramp: seed(dormant) -> peak(hot) */
+  --tier-seed: #9aa8a1;
+  --tier-rising: #0e9f57;
+  --tier-viral: #e39824;
+  --tier-peak: #ec5a3e;
+
+  --risk-low: #0e9f57;
+  --risk-medium: #e39824;
+  --risk-high: #ec5a3e;
+
+  --pos: #0e9f57;
+  --neu: #9aa8a1;
+  --neg: #ec5a3e;
+
+  --radius-s: 7px;
+  --radius-m: 11px;
+  --radius-l: 16px;
+  --shadow: 0 1px 2px rgba(16,36,26,0.04), 0 4px 16px rgba(16,36,26,0.05);
+
+  --font-display: 'Space Grotesk', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  --font-body: 'Inter', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  --font-mono: 'IBM Plex Mono', 'SF Mono', Consolas, monospace;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}
+
+body {
+  background: var(--bg);
+  background-image:
+    radial-gradient(ellipse 900px 520px at 12% -8%, rgba(14,159,87,0.10), transparent 60%),
+    radial-gradient(ellipse 720px 480px at 100% 0%, rgba(14,159,87,0.05), transparent 55%);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  min-height: 100vh;
+  padding: 28px 20px 60px;
+  touch-action: manipulation;
+}
+
+.skip-link {
+  position: absolute; left: -999px; top: 0;
+  background: var(--brand); color: #fff; padding: 8px 14px; border-radius: var(--radius-s); z-index: 100;
+}
+.skip-link:focus { left: 12px; top: 12px; }
+
+.wrap { max-width: 1260px; margin: 0 auto; }
+
+/* ---------------- Header ---------------- */
+.header {
+  display: flex; justify-content: space-between; align-items: flex-end;
+  flex-wrap: wrap; gap: 16px; margin-bottom: 20px;
+}
+.header-left { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.logo-mark {
+  width: 34px; height: 34px; border-radius: 9px;
+  background: linear-gradient(135deg, var(--brand), var(--brand-dark));
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; font-family: var(--font-display); font-weight: 700; font-size: 18px;
+  box-shadow: 0 2px 8px rgba(14,159,87,0.35);
+}
+.brand-block { display: flex; flex-direction: column; gap: 2px; }
+.brand {
+  font-family: var(--font-display); font-weight: 700; font-size: 19px; letter-spacing: -0.01em;
+  display: flex; align-items: baseline; gap: 7px;
+}
+.brand span { color: var(--text-muted); font-weight: 500; font-size: 13px; }
+.channel-line { font-size: 12.5px; color: var(--text-secondary); display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.channel-line b { color: var(--text-primary); font-weight: 600; }
+.baseline-pill {
+  font-family: var(--font-mono); font-size: 11.5px; color: var(--text-secondary);
+  background: var(--panel); border: 1px solid var(--line); padding: 3px 9px; border-radius: 100px;
+}
+.sync-status {
+  font-size: 12px; color: var(--text-muted); font-family: var(--font-mono);
+  display: flex; align-items: center; gap: 6px;
+}
+.sync-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--pos); box-shadow: 0 0 0 3px rgba(14,159,87,0.16); }
+
+/* ---------------- Insight banner ---------------- */
+.insight {
+  background: linear-gradient(120deg, #ffffff, #f4f9f5);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--brand);
+  border-radius: var(--radius-m);
+  padding: 15px 18px; margin-bottom: 20px;
+  box-shadow: var(--shadow);
+}
+.insight-head { font-family: var(--font-display); font-size: 13.5px; font-weight: 600; color: var(--brand-dark); display: flex; align-items: center; gap: 7px; margin-bottom: 8px; }
+.insight-body { font-size: 13px; color: var(--text-secondary); line-height: 1.65; }
+.insight-body b { color: var(--text-primary); font-weight: 600; }
+.insight-cols { display: grid; grid-template-columns: 1.3fr 1fr; gap: 22px; }
+.insight-cols h4 { font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); margin-bottom: 6px; }
+.insight-body ol { margin: 0; padding-left: 18px; }
+.insight-body li { margin-bottom: 3px; }
+
+/* ---------------- KPI strip ---------------- */
+.kpi-strip { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 22px; }
+.kpi-card {
+  background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius-m);
+  padding: 15px 18px; position: relative; overflow: hidden; cursor: pointer;
+  box-shadow: var(--shadow);
+  transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+}
+.kpi-card:hover { transform: translateY(-2px); box-shadow: 0 4px 18px rgba(16,36,26,0.10); }
+.kpi-card:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+.kpi-card::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; }
+.kpi-card.c-rising::before { background: var(--tier-viral); }
+.kpi-card.c-viral::before { background: var(--tier-peak); }
+.kpi-card.c-review::before { background: var(--brand); }
+.kpi-card.c-alert::before { background: var(--risk-high); }
+.kpi-num { font-family: var(--font-display); font-size: 30px; font-weight: 700; line-height: 1; }
+.kpi-label { font-size: 12.5px; color: var(--text-secondary); margin-top: 8px; }
+.kpi-sub { font-size: 11px; color: var(--text-muted); margin-top: 3px; font-family: var(--font-mono); }
+
+/* ---------------- Tabs ---------------- */
+.tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--line); margin-bottom: 20px; overflow-x: auto; }
+.tab-btn {
+  font-family: var(--font-body); font-size: 14px; font-weight: 600; color: var(--text-muted);
+  background: none; border: none; padding: 11px 16px; cursor: pointer; position: relative;
+  white-space: nowrap; display: flex; align-items: center; gap: 7px;
+  transition: color 0.15s ease;
+}
+.tab-btn:hover { color: var(--text-secondary); }
+.tab-btn:focus-visible { outline: 2px solid var(--brand); outline-offset: -2px; border-radius: 4px; }
+.tab-btn.active { color: var(--brand-dark); }
+.tab-btn.active::after { content: ''; position: absolute; left: 8px; right: 8px; bottom: -1px; height: 2px; background: var(--brand); border-radius: 2px 2px 0 0; }
+.tab-count { font-family: var(--font-mono); font-size: 11px; background: var(--raised); color: var(--text-secondary); padding: 1px 6px; border-radius: 100px; border: 1px solid var(--line); }
+.tab-btn.active .tab-count { background: var(--brand-soft); color: var(--brand-dark); border-color: rgba(14,159,87,0.3); }
+
+/* ---------------- Panel ---------------- */
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius-l); overflow: hidden; box-shadow: var(--shadow); }
+.panel-toolbar { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; padding: 15px 18px; border-bottom: 1px solid var(--line); }
+.panel-title { font-family: var(--font-display); font-size: 15px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+.panel-desc { font-size: 12px; color: var(--text-muted); margin-top: 2px; font-weight: 400; }
+.filter-group { display: flex; gap: 8px; flex-wrap: wrap; }
+.chip {
+  font-family: var(--font-body); font-size: 12.5px; color: var(--text-secondary);
+  background: var(--raised); border: 1px solid var(--line); padding: 6px 12px; border-radius: 100px; cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+.chip:hover { background: var(--raised-hover); color: var(--text-primary); }
+.chip.active { background: var(--brand-soft); border-color: rgba(14,159,87,0.35); color: var(--brand-dark); }
+.chip:focus-visible { outline: 2px solid var(--brand); outline-offset: 1px; }
+
+/* ---------------- Table ---------------- */
+.table-scroll { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; min-width: 780px; }
+thead th {
+  text-align: left; font-size: 11.5px; font-weight: 600; color: var(--text-muted);
+  text-transform: uppercase; letter-spacing: 0.04em; padding: 11px 16px;
+  border-bottom: 1px solid var(--line); white-space: nowrap; cursor: pointer; user-select: none;
+}
+thead th.no-sort { cursor: default; }
+thead th:hover:not(.no-sort) { color: var(--text-secondary); }
+thead th.sorted { color: var(--brand-dark); }
+thead th .arrow { font-size: 9px; margin-left: 3px; opacity: 0.7; }
+tbody tr { border-bottom: 1px solid var(--line-soft); transition: background 0.12s ease; }
+tbody tr:last-child { border-bottom: none; }
+tbody tr:hover { background: var(--raised); }
+tbody td { padding: 11px 16px; font-size: 13px; vertical-align: middle; }
+
+/* cover + title cell */
+.cover-cell { display: flex; align-items: center; gap: 11px; max-width: 340px; }
+.cover {
+  width: 68px; height: 40px; border-radius: 6px; object-fit: cover; flex-shrink: 0;
+  background: var(--raised); border: 1px solid var(--line);
+}
+.cover-meta { min-width: 0; }
+.cell-title { font-weight: 500; color: var(--text-primary); line-height: 1.35; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.cell-title a { color: inherit; text-decoration: none; }
+.cell-title a:hover { color: var(--brand-dark); text-decoration: underline; }
+.cell-sub { font-size: 11px; color: var(--text-muted); margin-top: 3px; font-family: var(--font-mono); }
+.num { font-family: var(--font-mono); color: var(--text-secondary); font-variant-numeric: tabular-nums; }
+.num.strong { color: var(--text-primary); font-weight: 500; }
+.mult { color: var(--brand-dark); font-weight: 600; }
+
+/* module tag */
+.mod-tag { display: inline-flex; align-items: center; gap: 5px; font-size: 11.5px; padding: 3px 9px; border-radius: 100px; background: var(--raised); border: 1px solid var(--line); color: var(--text-secondary); white-space: nowrap; }
+.mod-tag .dot { width: 6px; height: 6px; border-radius: 50%; }
+.m-snow_blower .dot { background: #4c8dff; }
+.m-lawn_mower .dot { background: var(--brand); }
+.m-trimmer .dot { background: #a97bd6; }
+.m-core .dot { background: #e39824; }
+.m-none .dot { background: var(--tier-seed); }
+.form-tag { font-size: 10.5px; font-family: var(--font-mono); color: var(--text-muted); padding: 2px 6px; border: 1px solid var(--line); border-radius: 4px; }
+
+/* Tier badge */
+.tier-badge { display: inline-flex; align-items: center; gap: 5px; font-family: var(--font-mono); font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 100px; border: 1px solid transparent; white-space: nowrap; }
+.tier-badge .dot { width: 6px; height: 6px; border-radius: 50%; }
+.tier-seed { color: #6c7770; background: rgba(154,168,161,0.15); border-color: rgba(154,168,161,0.35); }
+.tier-seed .dot { background: var(--tier-seed); }
+.tier-rising { color: var(--brand-dark); background: var(--brand-soft); border-color: rgba(14,159,87,0.3); }
+.tier-rising .dot { background: var(--tier-rising); }
+.tier-viral { color: #b57414; background: rgba(227,152,36,0.15); border-color: rgba(227,152,36,0.35); }
+.tier-viral .dot { background: var(--tier-viral); }
+.tier-peak { color: #c53f26; background: rgba(236,90,62,0.14); border-color: rgba(236,90,62,0.35); }
+.tier-peak .dot { background: var(--tier-peak); }
+
+/* Sparkline heat trace */
+.heat-trace { display: flex; align-items: flex-end; gap: 2px; height: 26px; }
+.heat-trace i { display: block; width: 4px; border-radius: 1px 1px 0 0; }
+
+/* Score bar */
+.score-wrap { display: flex; align-items: center; gap: 8px; min-width: 120px; }
+.score-track { flex: 1; height: 5px; background: var(--raised); border-radius: 100px; overflow: hidden; }
+.score-fill { height: 100%; border-radius: 100px; }
+.score-num { font-family: var(--font-mono); font-size: 12.5px; font-weight: 600; min-width: 22px; text-align: right; }
+
+/* sentiment pill */
+.senti { display: inline-flex; align-items: center; gap: 5px; font-size: 11.5px; font-weight: 500; padding: 3px 9px; border-radius: 100px; white-space: nowrap; }
+.senti .dot { width: 6px; height: 6px; border-radius: 50%; }
+.senti-positive { color: var(--brand-dark); background: var(--brand-soft); }
+.senti-positive .dot { background: var(--pos); }
+.senti-neutral { color: #6c7770; background: rgba(154,168,161,0.16); }
+.senti-neutral .dot { background: var(--neu); }
+.senti-negative { color: #c53f26; background: rgba(236,90,62,0.13); }
+.senti-negative .dot { background: var(--neg); }
+
+/* category pill */
+.cat-pill { font-size: 11px; padding: 3px 8px; border-radius: 5px; font-family: var(--font-mono); color: var(--text-secondary); background: var(--raised); border: 1px solid var(--line); white-space: nowrap; }
+.cat-complaint, .cat-risk { color: #c53f26; background: rgba(236,90,62,0.1); border-color: rgba(236,90,62,0.25); }
+.cat-purchase_inquiry { color: var(--brand-dark); background: var(--brand-soft); border-color: rgba(14,159,87,0.25); }
+
+/* Comments list */
+.comment-list { display: flex; flex-direction: column; }
+.comment-row { display: grid; grid-template-columns: 1fr 230px; gap: 16px; padding: 16px 18px; border-bottom: 1px solid var(--line-soft); align-items: start; }
+.comment-row:last-child { border-bottom: none; }
+.comment-row:hover { background: var(--raised); }
+.comment-meta { display: flex; gap: 8px; align-items: center; margin-bottom: 6px; flex-wrap: wrap; }
+.comment-author { font-weight: 600; font-size: 13px; }
+.comment-video { font-size: 11.5px; color: var(--text-muted); margin-bottom: 7px; }
+.comment-content { font-size: 13.5px; color: var(--text-primary); line-height: 1.55; margin-bottom: 9px; }
+.reply-box { background: var(--bg-soft); border: 1px solid var(--line); border-radius: var(--radius-s); padding: 9px 11px; font-size: 12.5px; color: var(--text-secondary); line-height: 1.5; }
+.reply-box b { color: var(--brand-dark); font-weight: 600; font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.04em; display: block; margin-bottom: 4px; }
+.comment-actions { display: flex; flex-direction: column; gap: 6px; align-items: stretch; }
+.btn { font-family: var(--font-body); font-size: 12px; font-weight: 600; padding: 8px 12px; border-radius: var(--radius-s); border: 1px solid var(--line); background: var(--panel); color: var(--text-secondary); cursor: pointer; transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease; text-align: center; }
+.btn:hover { background: var(--raised-hover); color: var(--text-primary); }
+.btn.primary { background: var(--brand); border-color: var(--brand); color: #fff; }
+.btn.primary:hover { background: var(--brand-dark); border-color: var(--brand-dark); }
+.btn:focus-visible { outline: 2px solid var(--brand); outline-offset: 1px; }
+.btn.done { background: var(--brand-soft); border-color: rgba(14,159,87,0.3); color: var(--brand-dark); cursor: default; }
+
+/* status pill */
+.status-pill { font-size: 11.5px; padding: 3px 9px; border-radius: 100px; font-weight: 500; white-space: nowrap; }
+.status-pending { color: var(--text-secondary); background: var(--raised); border: 1px solid var(--line); }
+.status-approved { color: var(--brand-dark); background: var(--brand-soft); }
+
+/* Alerts timeline */
+.alert-list { display: flex; flex-direction: column; }
+.alert-row { display: grid; grid-template-columns: 36px 1fr auto; gap: 14px; padding: 15px 18px; border-bottom: 1px solid var(--line-soft); align-items: center; }
+.alert-row:last-child { border-bottom: none; }
+.alert-row:hover { background: var(--raised); }
+.alert-icon { width: 36px; height: 36px; border-radius: var(--radius-s); display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+.pri-urgent .alert-icon { background: rgba(236,90,62,0.13); }
+.pri-high .alert-icon { background: rgba(227,152,36,0.15); }
+.pri-medium .alert-icon { background: var(--brand-soft); }
+.pri-low .alert-icon { background: var(--raised); }
+.alert-title-line { font-weight: 600; font-size: 13.5px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.alert-msg { font-size: 12.5px; color: var(--text-secondary); margin-top: 3px; line-height: 1.5; }
+.alert-time { font-size: 11.5px; color: var(--text-muted); font-family: var(--font-mono); margin-top: 4px; }
+.pri-badge { font-size: 10.5px; font-weight: 700; padding: 2px 7px; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.03em; font-family: var(--font-mono); }
+.pri-urgent .pri-badge { background: rgba(236,90,62,0.16); color: #c53f26; }
+.pri-high .pri-badge { background: rgba(227,152,36,0.18); color: #b57414; }
+.pri-medium .pri-badge { background: var(--brand-soft); color: var(--brand-dark); }
+.pri-low .pri-badge { background: var(--raised); color: var(--text-muted); }
+.alert-right { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+
+/* Snapshot tab */
+.snap-controls { display: flex; align-items: center; gap: 10px; padding: 14px 18px; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+.select-wrap select { font-family: var(--font-body); font-size: 13px; background: var(--panel); color: var(--text-primary); border: 1px solid var(--line); border-radius: var(--radius-s); padding: 8px 12px; cursor: pointer; }
+.select-wrap select:focus-visible { outline: 2px solid var(--brand); outline-offset: 1px; }
+.snap-summary { display: grid; grid-template-columns: repeat(4,1fr); gap: 1px; background: var(--line); border-bottom: 1px solid var(--line); }
+.snap-sum-cell { background: var(--panel); padding: 14px 18px; }
+.snap-sum-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; }
+.snap-sum-num { font-family: var(--font-display); font-size: 20px; font-weight: 700; margin-top: 4px; }
+.snap-sum-num.up { color: var(--pos); }
+.snap-sum-num.down { color: var(--neg); }
+.velocity-bars { display: flex; align-items: flex-end; gap: 8px; height: 96px; padding: 22px 18px 8px; }
+.vbar-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; height: 100%; justify-content: flex-end; }
+.vbar { width: 100%; max-width: 36px; border-radius: 3px 3px 0 0; min-height: 3px; }
+.vbar-date { font-size: 10px; color: var(--text-muted); font-family: var(--font-mono); }
+
+.empty-note { padding: 40px 20px; text-align: center; color: var(--text-muted); font-size: 13px; }
+
+footer { text-align: center; font-size: 11.5px; color: var(--text-muted); margin-top: 26px; font-family: var(--font-mono); }
+
+@media (max-width: 760px) {
+  .kpi-strip { grid-template-columns: repeat(2, 1fr); }
+  .insight-cols { grid-template-columns: 1fr; gap: 12px; }
+  .comment-row { grid-template-columns: 1fr; }
+  .comment-actions { flex-direction: row; }
+  .snap-summary { grid-template-columns: repeat(2,1fr); }
+}
+</style>
+</head>
+<body>
+<a href="#main-content" class="skip-link">跳到主内容</a>
+<div class="wrap">
+
+  <header class="header" role="banner">
+    <div class="header-left">
+      <div class="logo-mark">Y</div>
+      <div class="brand-block">
+        <div class="brand">Yarbo 内容监控台 <span>Media Growth Copilot</span></div>
+        <div class="channel-line">
+          <b>@yarboglobal</b>
+          <span class="baseline-pill" id="baselinePill">基准线加载中…</span>
+        </div>
+      </div>
+    </div>
+    <div class="sync-status"><span class="sync-dot"></span><span id="syncStatus">数据更新于 2026-07-03 09:00 · agent-browser 抓取</span></div>
+  </header>
+
+  <section class="insight" aria-label="本周洞察">
+    <div class="insight-head">● 本周洞察 &amp; 拍摄建议</div>
+    <div class="insight-cols">
+      <div>
+        <h4>发生了什么</h4>
+        <div class="insight-body">
+          <b>吹雪(snow_blower)内容霸榜</b>——《Winter Storm Fern》以 <b>48 万</b>播放成为峰值爆款,吹雪类平均爆款分 <b>79</b>,远高于全站(46)。
+          Shorts 平均互动率(<b>5.2%</b>)明显高于长视频(3.4%)。M 系列新品播放仍偏低,需加力。
+        </div>
+      </div>
+      <div>
+        <h4>下一步拍什么</h4>
+        <div class="insight-body">
+          <ol>
+            <li>冬季持续加码<b>真实暴雪实测</b>长视频</li>
+            <li>割草类多做 <b>&lt;60s Shorts</b>,前 5 秒放爬坡/条纹亮点</li>
+            <li>M 系列补强:结合场景生活类选题拉动认知</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="kpi-strip" id="kpiStrip" aria-live="polite"></div>
+
+  <nav class="tabs" id="tabs" aria-label="数据表切换"></nav>
+
+  <main class="panel" id="panelRoot"></main>
+
+  <footer>Media Growth Copilot · 内部运营工具 · 飞书卡片落地页 · dashboard_data.json 驱动</footer>
+</div>
+
+<script>
+/* =========================================================
+   MOCK DATA — 对齐 MVP 字段模型（真实 Yarbo 视频 + 示例互动数）
+   字段: video_id,title,publish_time,content_type,product_module,
+        is_short,views,likes,comments_count,engagement_rate,
+        comment_rate,view_velocity,viral_score,viral_tier,
+        thumbnail_url,video_url,trend
+   ========================================================= */
+let CHANNEL = { name:'@yarboglobal', avgViews:51000, avgEngagement:4.3 };
+
+const yt = id => `https://i.ytimg.com/vi/${id}/hqdefault.jpg`;
+
+let VIDEOS = [
+  { id:'2IHPWn2dXXk', title:'Winter Storm Fern: Robot Snowblower Battles Snow for 20 Hours Nonstop', publish:'2026-01-27', type:'feature_demo', module:'snow_blower', short:false, views:480305, likes:14200, comments:890, engagement:3.14, commentRate:0.19, velocity:48305, viralScore:96, tier:'peak', trend:[45,97,126,103,61,48,30] },
+  { id:'dzeSBTQS7bg', title:"Yarbo Tackles Netherlands' First Snow of 2026 – Winter Made Easy!", publish:'2026-01-09', type:'story', module:'snow_blower', short:false, views:369761, likes:11800, comments:640, engagement:3.36, commentRate:0.17, velocity:64761, viralScore:90, tier:'peak', trend:[38,83,103,81,65,40,22] },
+  { id:'59JGGQLStzs', title:'CES 2026, and the next generation of Yarbo is here! ⚡ (M-Series)', publish:'2026-01-13', type:'feature_demo', module:'core', short:false, views:89508, likes:3200, comments:410, engagement:4.03, commentRate:0.46, velocity:9100, viralScore:74, tier:'viral', trend:[18,26,22,16,11,8,6] },
+  { id:'dmZrrm9XyBk', title:'Never shovel snow again', publish:'2026-02-14', type:'entertainment', module:'snow_blower', short:true, views:62587, likes:2900, comments:180, engagement:4.92, commentRate:0.29, velocity:6800, viralScore:68, tier:'viral', trend:[9,15,17,13,9,6,5] },
+  { id:'Bgs7jBWvpRg', title:'🏆 My Yarbo Journey — Winners Announced', publish:'2026-01-30', type:'story', module:'snow_blower', short:false, views:59226, likes:1400, comments:320, engagement:2.90, commentRate:0.54, velocity:5200, viralScore:61, tier:'rising', trend:[8,12,11,9,7,5,4] },
+  { id:'RAfyVpSgwcg', title:'Not every mower makes it through this.', publish:'2026-06-12', type:'feature_demo', module:'lawn_mower', short:true, views:45123, likes:2100, comments:190, engagement:5.08, commentRate:0.42, velocity:8123, viralScore:58, tier:'rising', trend:[8,11,10,8,8,6,5] },
+  { id:'ILj8Q9mjVXE', title:'Yarbo vs. Massive lawn', publish:'2026-06-06', type:'feature_demo', module:'lawn_mower', short:true, views:38983, likes:1600, comments:150, engagement:4.49, commentRate:0.38, velocity:5400, viralScore:54, tier:'rising', trend:[7,10,9,7,6,5,4] },
+  { id:'wnXEonbfH-s', title:'This is what uphill mowing looks like. 💪', publish:'2026-06-16', type:'feature_demo', module:'lawn_mower', short:true, views:37766, likes:1800, comments:160, engagement:5.19, commentRate:0.42, velocity:4200, viralScore:55, tier:'rising', trend:[6,9,8,7,6,4,3] },
+  { id:'6yTSPJd4NeA', title:"Flex Isn't a Car. It's This Lawn. 🌿", publish:'2026-06-25', type:'lifestyle', module:'lawn_mower', short:true, views:22932, likes:1100, comments:95, engagement:5.21, commentRate:0.41, velocity:3100, viralScore:47, tier:'rising', trend:[5,8,7,5,4,3,3] },
+  { id:'inpY3h33aR4', title:'Step-by-Step Guide: Easy Installation of Yarbo Trimmer Module', publish:'2026-06-08', type:'tutorial', module:'trimmer', short:false, views:1413, likes:62, comments:18, engagement:5.66, commentRate:1.27, velocity:210, viralScore:22, tier:'seed', trend:[3,4,3,2,2,2,1] },
+  { id:'idQ7J2OJafA', title:'When Pets Meet Yarbo', publish:'2026-06-29', type:'entertainment', module:'lawn_mower', short:true, views:1065, likes:88, comments:12, engagement:9.39, commentRate:1.13, velocity:180, viralScore:28, tier:'seed', trend:[2,3,3,2,2,1,1] },
+  { id:'k2YQ3Us8Xfk', title:'Small yard. Big upgrade. (M Series)', publish:'2026-06-30', type:'feature_demo', module:'core', short:true, views:1094, likes:54, comments:9, engagement:5.76, commentRate:0.82, velocity:160, viralScore:20, tier:'seed', trend:[2,3,2,2,1,1,1] },
+];
+
+let SNAPSHOTS = {
+  '2IHPWn2dXXk': [
+    {date:'01-27', views:45000, delta:45000, velocity:45000},
+    {date:'01-28', views:142000, delta:97000, velocity:97000},
+    {date:'01-29', views:268000, delta:126000, velocity:126000},
+    {date:'01-30', views:371000, delta:103000, velocity:103000},
+    {date:'01-31', views:432000, delta:61000, velocity:61000},
+    {date:'02-01', views:480305, delta:48305, velocity:48305},
+  ],
+  'dzeSBTQS7bg': [
+    {date:'01-09', views:38000, delta:38000, velocity:38000},
+    {date:'01-10', views:121000, delta:83000, velocity:83000},
+    {date:'01-11', views:224000, delta:103000, velocity:103000},
+    {date:'01-12', views:305000, delta:81000, velocity:81000},
+    {date:'01-13', views:369761, delta:64761, velocity:64761},
+  ],
+  'RAfyVpSgwcg': [
+    {date:'06-12', views:8000, delta:8000, velocity:8000},
+    {date:'06-13', views:19000, delta:11000, velocity:11000},
+    {date:'06-14', views:29000, delta:10000, velocity:10000},
+    {date:'06-15', views:37000, delta:8000, velocity:8000},
+    {date:'06-16', views:45123, delta:8123, velocity:8123},
+  ],
+};
+
+let COMMENTS = [
+  { id:'c1', videoTitle:'Winter Storm Fern: Robot Snowblower...', author:'@karen_frost', content:"Ordered 3 weeks ago, still no shipping update and support won't reply. Very disappointed.", sentiment:'negative', category:'complaint', reply:'引导用户私信提供订单号，转接售后专线优先处理，并公开安抚避免负面发酵。', status:'pending' },
+  { id:'c2', videoTitle:'Never shovel snow again', author:'@suspicious_sam', content:'Is that link in the pinned comment legit? It redirected me to a weird site.', sentiment:'negative', category:'risk', reply:'需人工核实置顶链接来源；如为仿冒立即删除并置顶官方购买入口说明。', status:'pending' },
+  { id:'c3', videoTitle:'CES 2026 (M-Series)', author:'@gadgetguy', content:'How much is the M Series and when does it ship to the US?', sentiment:'positive', category:'purchase_inquiry', reply:'附 M Series 预售链接与预计发货时间；可引导留资获取上市通知。', status:'pending' },
+  { id:'c4', videoTitle:'Not every mower makes it through this.', author:'@lawnpro77', content:'Can it handle a 25° slope? My backyard is pretty steep.', sentiment:'neutral', category:'question', reply:'说明最大爬坡角度规格，并附坡地实测视频链接增强信任。', status:'pending' },
+  { id:'c5', videoTitle:"Yarbo Tackles Netherlands' First Snow", author:'@dutch_dave', content:'This is incredible! Just ordered one for my driveway 🙌', sentiment:'positive', category:'praise', reply:'感谢支持，欢迎晒使用视频参与 My Yarbo Journey 活动。', status:'pending' },
+  { id:'c6', videoTitle:'Yarbo vs. Massive lawn', author:'@bigyarden', content:'Finally a mower built for big properties. Adding to cart!', sentiment:'positive', category:'purchase_inquiry', reply:'附大面积场景推荐配置与购买链接。', status:'pending' },
+];
+
+let ALERTS = [
+  { type:'viral_signal', icon:'🔥', title:'爆款确认：Winter Storm Fern', msg:'播放量达频道均值 9.4×，日均增速持续领先，确认为峰值爆款。', pri:'urgent', time:'2026-07-03 08:12', resolved:false, video:'Winter Storm Fern' },
+  { type:'comment_risk', icon:'⚠️', title:'高风险评论：疑似钓鱼链接', msg:'《Never shovel snow again》评论区出现疑似恶意跳转链接，建议立即核查。', pri:'urgent', time:'2026-07-03 07:40', resolved:false, video:'Never shovel snow again' },
+  { type:'comment_risk', icon:'⚠️', title:'售后投诉：发货延迟', msg:'用户反馈下单 3 周未发货且客服未响应，表达退货意愿，需人工介入。', pri:'urgent', time:'2026-07-02 15:22', resolved:false, video:'Winter Storm Fern' },
+  { type:'view_surge', icon:'📈', title:'起量预警：Netherlands First Snow', msg:'发布 72 小时内日均增速达频道均值 2.3 倍，建议加大分发资源。', pri:'high', time:'2026-07-02 21:05', resolved:false, video:'Netherlands First Snow' },
+  { type:'milestone', icon:'🏆', title:'里程碑：突破 40 万播放', msg:'Winter Storm Fern 累计播放量突破 400,000。', pri:'low', time:'2026-07-01 06:15', resolved:true, video:'Winter Storm Fern' },
+  { type:'anomaly_drop', icon:'📉', title:'流量异常：Uphill mowing', msg:'日均增速较 7 天前下跌 58%，建议排查分发或选题问题。', pri:'high', time:'2026-06-30 12:40', resolved:true, video:'This is what uphill mowing looks like' },
+];
+
+const TIER_LABEL = { seed:'萌芽', rising:'上升', viral:'爆款', peak:'峰值' };
+const MODULE_LABEL = { snow_blower:'吹雪', lawn_mower:'割草', trimmer:'修边', blower:'吹叶', collector:'集草', core:'主机', multi:'多模块', none:'品牌' };
+const TYPE_LABEL = { feature_demo:'功能演示', lifestyle:'场景生活', story:'人物叙事', review:'测评', tutorial:'教程', entertainment:'娱乐', unboxing:'开箱' };
+const SENTI_LABEL = { positive:'正面', neutral:'中性', negative:'负面' };
+const CAT_LABEL = { praise:'夸赞', question:'提问', complaint:'投诉', purchase_inquiry:'询购', risk:'风险', spam:'垃圾', '夸赞':'夸赞', '提问':'提问', '投诉':'投诉', '询购':'询购', '风险':'风险', '垃圾':'垃圾' };
+const PRI_LABEL = { low:'低', medium:'中', high:'高', urgent:'紧急' };
+
+function escapeHtml(value) {
+  return String(value ?? '')
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;');
+}
+
+function videoIdFromUrl(url, fallback) {
+  if (!url) return fallback;
+  try {
+    const parsed = new URL(url);
+    return parsed.searchParams.get('v') || parsed.pathname.split('/').filter(Boolean).pop() || fallback;
+  } catch (e) {
+    return fallback;
+  }
+}
+
+function normalizeModule(module) {
+  const map = {
+    '吹雪':'snow_blower',
+    '割草':'lawn_mower',
+    '修边':'trimmer',
+    '吹叶':'blower',
+    '集草':'collector',
+    '主机':'core',
+    '多模块':'multi',
+    '品牌':'none',
+  };
+  return map[module] || module || 'none';
+}
+
+function normalizeTier(tier) {
+  return tier === 'breakout' ? 'viral' : (tier || 'seed');
+}
+
+function applyDashboardPayload(payload) {
+  const tables = payload.tables || {};
+  const overview = tables.performance_overview || [];
+  const viralRows = tables.viral_tracking || [];
+  const snapshotRows = tables.trend_snapshot || [];
+  const commentRows = tables.comments_pending || [];
+  const alertRows = tables.alert_history || [];
+  const viralByUrl = Object.fromEntries(viralRows.map(row => [row.video_url, row]));
+
+  VIDEOS = overview.map((row, index) => {
+    const viral = viralByUrl[row.video_url] || {};
+    const id = videoIdFromUrl(row.video_url, `video_${index + 1}`);
+    const tier = normalizeTier(viral.viral_tier);
+    return {
+      id,
+      title: row.title || `Video ${index + 1}`,
+      publish: row.publish_time || '',
+      type: row.content_type || 'feature_demo',
+      module: normalizeModule(row.product_module),
+      short: Boolean(row.is_short),
+      views: Number(row.views || 0),
+      likes: Number(row.likes || 0),
+      comments: Number(row.comments_count || 0),
+      engagement: Number(row.engagement_rate || 0),
+      commentRate: Number(row.comment_rate || 0),
+      velocity: Number(viral.view_velocity || 0),
+      viralScore: Number(row.viral_score || viral.viral_score || 0),
+      tier,
+      trend: [1, 2, 3, 4, 5, 6, Math.max(1, Number(viral.view_velocity || row.views || 1))],
+      thumbnail: row.thumbnail_url,
+      url: row.video_url,
+    };
+  });
+
+  SNAPSHOTS = {};
+  snapshotRows.forEach((row, index) => {
+    const id = videoIdFromUrl(row.video_url, `snapshot_${index + 1}`);
+    SNAPSHOTS[id] = [{
+      date: row.snapshot_at || '',
+      views: Number(row.views || 0),
+      delta: Number(row.view_delta || 0),
+      velocity: Number(row.view_velocity || 0),
+    }];
+  });
+
+  COMMENTS = commentRows.map((row, index) => ({
+    id: `comment_${index + 1}`,
+    videoTitle: row.video_url || 'Linked video',
+    author: row.comment_author || '@viewer',
+    content: row.comment_content || '',
+    sentiment: row.sentiment || 'neutral',
+    category: row.category || '提问',
+    reply: row.reply_suggestion || '',
+    status: row.approval_status || 'pending',
+  }));
+
+  ALERTS = alertRows.map((row, index) => ({
+    type: row.alert_type || 'viral_signal',
+    icon: row.alert_type === 'comment_risk' ? '⚠️' : '🔥',
+    title: row.alert_type || `告警 ${index + 1}`,
+    msg: row.alert_message || '',
+    pri: row.priority || 'medium',
+    time: row.triggered_at || '',
+    resolved: false,
+    video: row.video_url || '',
+  }));
+
+  if (VIDEOS.length) {
+    CHANNEL = {
+      name: '@yarboglobal',
+      avgViews: Math.round(VIDEOS.reduce((sum, v) => sum + v.views, 0) / VIDEOS.length),
+      avgEngagement: Number((VIDEOS.reduce((sum, v) => sum + v.engagement, 0) / VIDEOS.length).toFixed(1)),
+    };
+  }
+
+  selectedSnap = Object.keys(SNAPSHOTS)[0] || (VIDEOS[0] && VIDEOS[0].id) || selectedSnap;
+  document.getElementById('syncStatus').textContent =
+    `数据更新于 ${new Date(payload.generated_at).toLocaleString('zh-CN')} · ${payload.source || 'media-growth-copilot'}`;
+}
+
+async function loadDashboardData() {
+  try {
+    const response = await fetch('./dashboard_data.json', { cache: 'no-store' });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    applyDashboardPayload(await response.json());
+  } catch (error) {
+    document.getElementById('syncStatus').textContent =
+      `使用内置示例数据 · 运行 python3 -m app.main 可生成 dashboard_data.json`;
+  }
+}
+
+/* ============ KPI ============ */
+function renderKPI() {
+  const rising = VIDEOS.filter(v => ['rising','viral','peak'].includes(v.tier)).length;
+  const hot = VIDEOS.filter(v => ['viral','peak'].includes(v.tier)).length;
+  const pendingComments = COMMENTS.filter(c => c.status === 'pending').length;
+  const openAlerts = ALERTS.filter(a => !a.resolved).length;
+
+  document.getElementById('kpiStrip').innerHTML = `
+    <div class="kpi-card c-rising" tabindex="0" role="button" onclick="switchTab('viral')" onkeydown="if(event.key==='Enter')switchTab('viral')">
+      <div class="kpi-num">${rising}</div><div class="kpi-label">正在起量的作品</div><div class="kpi-sub">tier ≥ rising</div>
+    </div>
+    <div class="kpi-card c-viral" tabindex="0" role="button" onclick="switchTab('viral')" onkeydown="if(event.key==='Enter')switchTab('viral')">
+      <div class="kpi-num">${hot}</div><div class="kpi-label">本周爆款</div><div class="kpi-sub">tier ∈ viral / peak</div>
+    </div>
+    <div class="kpi-card c-review" tabindex="0" role="button" onclick="switchTab('comments')" onkeydown="if(event.key==='Enter')switchTab('comments')">
+      <div class="kpi-num">${pendingComments}</div><div class="kpi-label">待审批评论</div><div class="kpi-sub">approval_status = pending</div>
+    </div>
+    <div class="kpi-card c-alert" tabindex="0" role="button" onclick="switchTab('alerts')" onkeydown="if(event.key==='Enter')switchTab('alerts')">
+      <div class="kpi-num">${openAlerts}</div><div class="kpi-label">未处理告警</div><div class="kpi-sub">urgent 优先</div>
+    </div>`;
+
+  document.getElementById('baselinePill').textContent =
+    `基准线：均播 ${CHANNEL.avgViews.toLocaleString()} · 均互动率 ${CHANNEL.avgEngagement}%`;
+}
+
+/* ============ TABS ============ */
+let currentTab = 'overview';
+let sortState = { key: 'viralScore', dir: -1 };
+
+function tabs() {
+  return [
+    { id:'overview', label:'表现总览表', count: VIDEOS.length },
+    { id:'snapshots', label:'趋势快照表', count: Object.keys(SNAPSHOTS).length },
+    { id:'viral', label:'爆款追踪表', count: VIDEOS.filter(v => ['rising','viral','peak'].includes(v.tier)).length },
+    { id:'comments', label:'评论待处理表', count: COMMENTS.filter(c => c.status === 'pending').length },
+    { id:'alerts', label:'告警历史表', count: ALERTS.filter(a => !a.resolved).length },
+  ];
+}
+
+function renderTabs() {
+  document.getElementById('tabs').innerHTML = tabs().map(t => `
+    <button class="tab-btn ${t.id === currentTab ? 'active' : ''}" onclick="switchTab('${t.id}')">
+      ${t.label} <span class="tab-count">${t.count}</span>
+    </button>`).join('');
+}
+function switchTab(id) { currentTab = id; renderTabs(); renderPanel(); window.scrollTo({top: 0, behavior: 'smooth'}); }
+
+/* ============ shared UI bits ============ */
+function heatTrace(trend, tier) {
+  const max = Math.max(...trend, 1);
+  return `<div class="heat-trace" aria-hidden="true">${trend.map(v => {
+    const h = Math.max(2, Math.round((v / max) * 24));
+    return `<i style="height:${h}px;background:var(--tier-${tier})"></i>`;
+  }).join('')}</div>`;
+}
+function tierBadge(tier) { return `<span class="tier-badge tier-${tier}"><span class="dot"></span>${TIER_LABEL[tier]}</span>`; }
+function moduleTag(m) { return `<span class="mod-tag m-${m}"><span class="dot"></span>${MODULE_LABEL[m]||m}</span>`; }
+function scoreBar(score, tier) {
+  return `<div class="score-wrap"><div class="score-track"><div class="score-fill" style="width:${score}%;background:var(--tier-${tier})"></div></div><div class="score-num">${score}</div></div>`;
+}
+function coverCell(v) {
+  const thumbnail = v.thumbnail || yt(v.id);
+  const link = v.url || (v.short ? 'https://www.youtube.com/shorts/'+v.id : 'https://www.youtube.com/watch?v='+v.id);
+  return `<div class="cover-cell">
+      <img class="cover" src="${thumbnail}" alt="" loading="lazy" width="68" height="40">
+      <div class="cover-meta">
+        <div class="cell-title"><a href="${link}" target="_blank" rel="noopener">${escapeHtml(v.title)}</a></div>
+        <div class="cell-sub">${v.publish} · ${TYPE_LABEL[v.type]} · ${v.short ? 'Shorts' : '长视频'}</div>
+      </div>
+    </div>`;
+}
+
+/* ============ PANEL 1 — 表现总览表 ============ */
+let overviewModuleFilter = 'all';
+function renderOverview() {
+  let rows = [...VIDEOS];
+  if (overviewModuleFilter !== 'all') rows = rows.filter(v => v.module === overviewModuleFilter);
+  rows.sort((a,b) => sortState.dir * ((a[sortState.key] ?? 0) - (b[sortState.key] ?? 0)));
+  const arrow = k => sortState.key === k ? `<span class="arrow">${sortState.dir === -1 ? '▼' : '▲'}</span>` : '';
+  const sc = k => sortState.key === k ? 'sorted' : '';
+
+  const filters = [['all','全部'], ...[...new Set(VIDEOS.map(v => v.module))].map(module => [module, MODULE_LABEL[module] || module])];
+
+  return `
+    <div class="panel-toolbar">
+      <div><div class="panel-title">表现总览表</div><div class="panel-desc">全部作品核心指标一览 · 点击表头排序</div></div>
+      <div class="filter-group">
+        ${filters.map(([id,l]) => `<button class="chip ${overviewModuleFilter===id?'active':''}" onclick="setOverviewModule('${id}')">${l}</button>`).join('')}
+      </div>
+    </div>
+    <div class="table-scroll">
+      <table>
+        <thead><tr>
+          <th class="no-sort">封面 / 标题</th>
+          <th class="no-sort">产品模块</th>
+          <th class="${sc('views')}" onclick="sortOverview('views')">播放量 ${arrow('views')}</th>
+          <th class="${sc('engagement')}" onclick="sortOverview('engagement')">互动率 ${arrow('engagement')}</th>
+          <th class="${sc('commentRate')}" onclick="sortOverview('commentRate')">评论率 ${arrow('commentRate')}</th>
+          <th class="no-sort">热度轨迹</th>
+          <th class="${sc('viralScore')}" onclick="sortOverview('viralScore')">爆款评分 ${arrow('viralScore')}</th>
+        </tr></thead>
+        <tbody>
+          ${rows.map(v => `<tr>
+            <td>${coverCell(v)}</td>
+            <td>${moduleTag(v.module)}</td>
+            <td class="num strong">${v.views.toLocaleString()}</td>
+            <td class="num">${v.engagement.toFixed(1)}%</td>
+            <td class="num">${v.commentRate.toFixed(2)}%</td>
+            <td>${heatTrace(v.trend, v.tier)}</td>
+            <td><div style="display:flex;align-items:center;gap:8px">${scoreBar(v.viralScore, v.tier)} ${tierBadge(v.tier)}</div></td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>`;
+}
+function setOverviewModule(id){ overviewModuleFilter = id; renderPanel(); }
+function sortOverview(key) { sortState.dir = (sortState.key === key) ? -sortState.dir : -1; sortState.key = key; renderPanel(); }
+
+/* ============ PANEL 2 — 趋势快照表 ============ */
+let selectedSnap = '2IHPWn2dXXk';
+function renderSnapshots() {
+  const options = Object.keys(SNAPSHOTS).map(id => {
+    const v = VIDEOS.find(v => v.id === id);
+    return `<option value="${id}" ${id===selectedSnap?'selected':''}>${(v ? v.title : id).slice(0,42)}</option>`;
+  }).join('');
+  const data = SNAPSHOTS[selectedSnap] || [];
+  const video = VIDEOS.find(v => v.id === selectedSnap) || VIDEOS[0];
+  if (!video || data.length === 0) {
+    return `<div class="panel-toolbar"><div><div class="panel-title">趋势快照表</div><div class="panel-desc">暂无快照数据</div></div></div><div class="empty-note">暂无趋势快照。</div>`;
+  }
+  const maxVel = Math.max(...data.map(d => d.velocity));
+  const latestVel = data[data.length-1].velocity;
+  const prevVel = data.length>1 ? data[data.length-2].velocity : latestVel;
+  const up = latestVel >= prevVel;
+  const total = data[data.length-1].views;
+  const mult = (video.views / CHANNEL.avgViews).toFixed(1);
+
+  return `
+    <div class="panel-toolbar">
+      <div><div class="panel-title">趋势快照表</div><div class="panel-desc">按视频查看每日播放增量与增速曲线</div></div>
+    </div>
+    <div class="snap-controls">
+      <div class="select-wrap"><select onchange="selectSnap(this.value)" aria-label="选择视频">${options}</select></div>
+      ${moduleTag(video.module)} ${tierBadge(video.tier)}
+    </div>
+    <div class="snap-summary">
+      <div class="snap-sum-cell"><div class="snap-sum-label">累计播放</div><div class="snap-sum-num">${total.toLocaleString()}</div></div>
+      <div class="snap-sum-cell"><div class="snap-sum-label">最新日增速</div><div class="snap-sum-num ${up?'up':'down'}">${latestVel.toLocaleString()} ${up?'↑':'↓'}</div></div>
+      <div class="snap-sum-cell"><div class="snap-sum-label">对比频道均值</div><div class="snap-sum-num">${mult}×</div></div>
+      <div class="snap-sum-cell"><div class="snap-sum-label">爆款评分</div><div class="snap-sum-num">${video.viralScore}</div></div>
+    </div>
+    <div class="velocity-bars" aria-hidden="true">
+      ${data.map(d => `<div class="vbar-col"><div class="vbar" style="height:${Math.max(4,(d.velocity/maxVel)*100)}%;background:var(--tier-${video.tier})"></div><div class="vbar-date">${d.date}</div></div>`).join('')}
+    </div>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th class="no-sort">快照日期</th><th class="no-sort">累计播放</th><th class="no-sort">播放增量</th><th class="no-sort">日均增速</th></tr></thead>
+        <tbody>
+          ${data.map(d => `<tr>
+            <td class="num">${d.date}</td>
+            <td class="num strong">${d.views.toLocaleString()}</td>
+            <td class="num" style="color:var(--pos)">+${d.delta.toLocaleString()}</td>
+            <td class="num">${d.velocity.toLocaleString()}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>`;
+}
+function selectSnap(id){ selectedSnap = id; renderPanel(); }
+
+/* ============ PANEL 3 — 爆款追踪表 ============ */
+function renderViral() {
+  const rows = VIDEOS.filter(v => ['rising','viral','peak'].includes(v.tier)).sort((a,b) => b.viralScore - a.viralScore);
+  return `
+    <div class="panel-toolbar">
+      <div><div class="panel-title">爆款追踪表</div><div class="panel-desc">tier ∈ {rising, viral, peak} · 按爆款评分降序</div></div>
+    </div>
+    <div class="table-scroll">
+      <table>
+        <thead><tr>
+          <th class="no-sort">封面 / 标题</th><th class="no-sort">产品模块</th><th class="no-sort">播放量</th>
+          <th class="no-sort">对比均值</th><th class="no-sort">热度轨迹</th><th class="no-sort">爆款评分</th><th class="no-sort">等级</th>
+        </tr></thead>
+        <tbody>
+          ${rows.map(v => `<tr>
+            <td>${coverCell(v)}</td>
+            <td>${moduleTag(v.module)}</td>
+            <td class="num strong">${v.views.toLocaleString()}</td>
+            <td class="num mult">${(v.views/CHANNEL.avgViews).toFixed(1)}×</td>
+            <td>${heatTrace(v.trend, v.tier)}</td>
+            <td>${scoreBar(v.viralScore, v.tier)}</td>
+            <td>${tierBadge(v.tier)}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>`;
+}
+
+/* ============ PANEL 4 — 评论待处理表 ============ */
+let commentFilter = 'all';
+function renderComments() {
+  let rows = COMMENTS.filter(c => c.status === 'pending');
+  if (commentFilter !== 'all') rows = rows.filter(c => c.sentiment === commentFilter);
+  const filters = [['all','全部'],['negative','负面'],['neutral','中性'],['positive','正面']];
+
+  return `
+    <div class="panel-toolbar">
+      <div><div class="panel-title">评论待处理表</div><div class="panel-desc">approval_status = pending · AI 已生成回复建议，需人工审批</div></div>
+      <div class="filter-group">
+        ${filters.map(([id,l]) => `<button class="chip ${commentFilter===id?'active':''}" onclick="setCommentFilter('${id}')">${l}</button>`).join('')}
+      </div>
+    </div>
+    <div class="comment-list" aria-live="polite">
+      ${rows.length===0 ? '<div class="empty-note">没有符合筛选条件的待处理评论</div>' : rows.map((c,i) => `
+        <div class="comment-row" id="cm-${i}">
+          <div>
+            <div class="comment-meta">
+              <span class="comment-author">${c.author}</span>
+              <span class="senti senti-${c.sentiment}"><span class="dot"></span>${SENTI_LABEL[c.sentiment]}</span>
+              <span class="cat-pill cat-${c.category}">${CAT_LABEL[c.category]}</span>
+            </div>
+            <div class="comment-video">来自：${c.videoTitle}</div>
+            <div class="comment-content">${c.content}</div>
+            <div class="reply-box"><b>AI 建议回复</b>${c.reply}</div>
+          </div>
+          <div class="comment-actions">
+            <button class="btn primary" onclick="approveComment(${i})">通过并回复</button>
+            <button class="btn">拒绝</button>
+          </div>
+        </div>`).join('')}
+    </div>`;
+}
+function setCommentFilter(id){ commentFilter = id; renderPanel(); }
+function approveComment(i) {
+  const el = document.getElementById(`cm-${i}`);
+  if (!el) return;
+  el.style.opacity = '0.4';
+  const btn = el.querySelector('.btn.primary');
+  btn.textContent = '已通过 ✓'; btn.classList.add('done'); btn.onclick = null;
+}
+
+/* ============ PANEL 5 — 告警历史表 ============ */
+let alertFilter = 'unresolved';
+function renderAlerts() {
+  let rows = ALERTS;
+  if (alertFilter === 'unresolved') rows = rows.filter(a => !a.resolved);
+  if (alertFilter === 'urgent') rows = rows.filter(a => a.pri === 'urgent');
+  rows = [...rows].sort((a,b) => new Date(b.time) - new Date(a.time));
+  const filters = [['unresolved','未处理'],['urgent','紧急'],['all','全部']];
+
+  return `
+    <div class="panel-toolbar">
+      <div><div class="panel-title">告警历史表</div><div class="panel-desc">按触发时间倒序 · urgent 优先处理</div></div>
+      <div class="filter-group">
+        ${filters.map(([id,l]) => `<button class="chip ${alertFilter===id?'active':''}" onclick="setAlertFilter('${id}')">${l}</button>`).join('')}
+      </div>
+    </div>
+    <div class="alert-list">
+      ${rows.length===0 ? '<div class="empty-note">没有符合筛选条件的告警</div>' : rows.map(a => `
+        <div class="alert-row pri-${a.pri}">
+          <div class="alert-icon">${a.icon}</div>
+          <div>
+            <div class="alert-title-line">${a.title} <span class="pri-badge">${PRI_LABEL[a.pri]}</span></div>
+            <div class="alert-msg">${a.msg}</div>
+            <div class="alert-time">${a.time} · ${a.video}</div>
+          </div>
+          <div class="alert-right">
+            ${a.resolved ? '<span class="status-pill status-approved">已处理</span>' : `<button class="btn primary" onclick="resolveAlert(${ALERTS.indexOf(a)})">标记已处理</button>`}
+          </div>
+        </div>`).join('')}
+    </div>`;
+}
+function setAlertFilter(id){ alertFilter = id; renderPanel(); }
+function resolveAlert(idx) { ALERTS[idx].resolved = true; renderTabs(); renderKPI(); renderPanel(); }
+
+/* ============ ROUTER ============ */
+function renderPanel() {
+  const map = { overview:renderOverview, snapshots:renderSnapshots, viral:renderViral, comments:renderComments, alerts:renderAlerts };
+  document.getElementById('panelRoot').innerHTML = map[currentTab]();
+}
+
+async function initDashboard() {
+  await loadDashboardData();
+  renderKPI();
+  renderTabs();
+  renderPanel();
+}
+
+initDashboard();
+</script>
+</body>
+</html>

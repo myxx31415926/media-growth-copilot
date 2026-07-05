@@ -59,7 +59,7 @@ class InsightService:
         else:
             print("- Content is mostly mid/low performance, indicating weak engagement signals.")
 
-        if c["category_distribution"]["spam"] > 0:
+        if c["category_distribution"].get("垃圾", 0) > 0:
             print("- Spam comments detected, lowering engagement quality signal.")
 
     # -------------------------

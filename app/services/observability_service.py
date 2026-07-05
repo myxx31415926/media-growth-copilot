@@ -33,18 +33,15 @@ class ObservabilityService:
             "neutral": 0
         }
 
-        category_count = {
-            "spam": 0,
-            "sales_inquiry": 0,
-            "normal": 0
-        }
+        category_count = {}
 
         pending_review = 0
 
         for c in comments:
 
             sentiment_count[c["sentiment"]] += 1
-            category_count[c["category"]] += 1
+            category = c["category"]
+            category_count[category] = category_count.get(category, 0) + 1
 
             if c.get("review_status") == "pending_human_review":
                 pending_review += 1

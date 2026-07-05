@@ -17,13 +17,19 @@ class CommentAgent:
 
             results.append({
                 "comment_id": item.get("comment_id"),
+                "video_id": item.get("video_id"),
+                "video_url": item.get("video_url"),
                 "text": item.get("text"),
+                "comment_content": item.get("comment_content", item.get("text")),
+                "comment_author": item.get("comment_author"),
+                "likes_count": item.get("likes_count", 0),
                 "sentiment": sentiment,
                 "category": category,
                 "reply_suggestion": reply,
 
-                # 🧠 HUMAN-IN-THE-LOOP GATE（关键新增）
+                # Human-in-the-loop gate.
                 "review_status": "pending_human_review",
+                "approval_status": "pending",
                 "action_allowed": False
             })
 
@@ -47,23 +53,38 @@ class CommentAgent:
     # -------------------------
     def _category(self, text):
 
-        if "buy" in text or "price" in text:
-            return "sales_inquiry"
-
         if "http" in text or "www" in text:
-            return "spam"
+            return "垃圾"
 
-        return "normal"
+        if any(w in text for w in ["danger", "unsafe", "scam", "fake"]):
+            return "风险"
+
+        if "buy" in text or "price" in text:
+            return "询购"
+
+        if any(w in text for w in ["bad", "hate", "terrible", "worst"]):
+            return "投诉"
+
+        if "?" in text or any(w in text for w in ["how", "where", "when", "can i"]):
+            return "提问"
+
+        if any(w in text for w in ["good", "great", "love", "amazing"]):
+            return "夸赞"
+
+        return "提问"
 
     # -------------------------
     # reply suggestion
     # -------------------------
     def _reply_suggestion(self, sentiment, category):
 
-        if category == "spam":
+        if category == "垃圾":
             return "ignore or remove"
 
-        if category == "sales_inquiry":
+        if category == "风险":
+            return "escalate for manual review"
+
+        if category == "询购":
             return "provide product details"
 
         if sentiment == "positive":

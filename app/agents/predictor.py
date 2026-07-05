@@ -19,7 +19,7 @@ class PredictorAgent:
             # -------------------------
             # scoring model
             # -------------------------
-            score = engagement_rate * 500
+            score = engagement_rate * 5
 
             if comments > likes * 0.3:
                 score += 10
@@ -34,17 +34,22 @@ class PredictorAgent:
             # -------------------------
             if viral_score >= 75:
                 label = "breakout"
+                viral_tier = "viral"
             elif viral_score >= 50:
                 label = "high"
+                viral_tier = "rising"
             elif viral_score >= 25:
                 label = "medium"
+                viral_tier = "seed"
             else:
                 label = "low"
+                viral_tier = "seed"
 
             new_item = item.copy()
             new_item.update({
                 "viral_score": viral_score,
-                "label": label
+                "label": label,
+                "viral_tier": viral_tier
             })
 
             result.append(new_item)
